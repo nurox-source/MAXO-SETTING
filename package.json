@@ -1,0 +1,14 @@
+{
+  "name": "nuke-bot",
+  "version": "1.0.0",
+  "description": "Discord nuke and AI bot",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.14.0",
+    "express": "^4.19.2"
+  }
+}
