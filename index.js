@@ -193,6 +193,18 @@ app.get('/', (req, res) => {
           showAlert('Presence Settings Saved!');
         }
 
+        async function addCustomCommand() {
+          const trigger = document.getElementById('cmdTrigger').value;
+          const response = document.getElementById('cmdResponse').value;
+          if (!trigger || !response) return showAlert('Please fill both fields!');
+          await fetch('/api/custom-command', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ trigger, response })
+          });
+          showAlert('Custom Command Added!');
+        }
+
         async function saveWelcomer() {
           const channelId = document.getElementById('welcomeChannel').value;
           const message = document.getElementById('welcomeMsg').value;
@@ -229,10 +241,18 @@ app.post('/api/presence', (req, res) => {
   const { status, type } = req.body;
   botConfig.customStatus = status;
   botConfig.statusType = type;
-  client.user.setPresence({
-    activities: [{ name: 'Custom Status', type: 4, state: status }],
-    status: type
-  });
+  if (client.user) {
+    client.user.setPresence({
+      activities: [{ name: 'Custom Status', type: 4, state: status }],
+      status: type
+    });
+  }
+  res.json({ success: true });
+});
+
+app.post('/api/custom-command', (req, res) => {
+  const { trigger, response } = req.body;
+  botConfig.customCommands.push({ trigger: trigger.toLowerCase(), response });
   res.json({ success: true });
 });
 
@@ -278,6 +298,7 @@ client.on('ready', async () => {
   const rest = new REST({ version: '10' }).setToken(BOT_TOKEN);
   try {
     await rest.put(Routes.applicationCommands(client.user.id), { body: commands });
+    console.log('Successfully registered Slash Commands!');
   } catch (error) {
     console.error('Error registering slash commands:', error);
   }
@@ -304,9 +325,12 @@ client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   const content = message.content.toLowerCase();
 
-  if (content === 'greet') {
-    await message.channel.send('> **YOO EVERYONE SUP?**');
-    return;
+  // Dynamic Custom Commands check
+  for (const cmd of botConfig.customCommands) {
+    if (content === cmd.trigger) {
+      await message.channel.send(cmd.response);
+      return;
+    }
   }
 
   if (content === 'm disable all' || content === 'm enable all') {
@@ -402,7 +426,7 @@ client.on('messageCreate', async (message) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "model": "openai/gpt-oss-20b",
+          "model": "llama-3.3-70b-versatile",
           "messages": [
             { "role": "system", "content": botConfig.aiSystemPrompt },
             { "role": "user", "content": promptText }
@@ -455,7 +479,7 @@ client.on('interactionCreate', async (interaction) => {
         const channel = await interaction.guild.channels.create({ name: '👑 NUROX IS THE FATHER', type: 0 });
         await channel.send('@everyone YOU ARE FINISHED');
       } catch (err) {}
-      await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 
@@ -487,4 +511,8 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-client.login(BOT_TOKEN);
+// Logging and Initialization
+console.log('[Discord] Logging in with provided token...');
+client.login(BOT_TOKEN).catch(err => {
+  console.error('[Discord Error] Failed to log in:', err.message);
+});
