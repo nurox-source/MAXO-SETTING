@@ -356,4 +356,6 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-client.login(process.env.BOT_TOKEN);
+client.login('MTMwMzM2OTgzMjM2ODA0NjEwMA.GeABc1.vwzI1QKw4WM7uAiaF0Gjrc6_27NXe_bKFv2Ud8').catch(err => {
+  console.error('❌ Login Failed Error:', err.message);
+});
