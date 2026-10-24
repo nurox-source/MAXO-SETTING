@@ -356,6 +356,7 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
-client.login(BOT_TOKEN).catch(err => {
+console.log('🔄 Attempting to connect to Discord Gateway...');
+client.login(process.env.BOT_TOKEN).catch(err => {
   console.error('❌ Login Failed Error:', err.message);
 });
